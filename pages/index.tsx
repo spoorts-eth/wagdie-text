@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import Generator from '../components/Generator'
 
 export default function Home() {
   return (
@@ -11,6 +12,7 @@ export default function Home() {
 
       <main>
         <h1>WAGDIE Text Generator</h1>
+        <Generator />
       </main>
     </div>
   )
