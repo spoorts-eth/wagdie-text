@@ -56,7 +56,6 @@ const CustomEditor = {
         Editor.string(editor, editor.selection)
       )
       if (text.length) {
-        console.log(text, isBold);
         Transforms.insertText(editor, this.generateText(text, !isBold), {})
         // todo work out how to keep this
         Transforms.setSelection(editor, currentSelection)

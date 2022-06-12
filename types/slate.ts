@@ -1,5 +1,4 @@
-// TypeScript users only add this code
-import { BaseEditor, Descendant } from 'slate'
+import { BaseEditor } from 'slate'
 import { ReactEditor } from 'slate-react'
 
 type CustomElement = {
@@ -7,7 +6,7 @@ type CustomElement = {
   children: CustomText[]
   bold?: boolean
 }
-type CustomText = { text: string, bold?: boolean }
+type CustomText = { text: string; bold?: boolean }
 
 declare module 'slate' {
   interface CustomTypes {
