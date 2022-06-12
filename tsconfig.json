@@ -3,6 +3,7 @@
   "display": "Default",
   "compilerOptions": {
     "composite": false,
+    "downlevelIteration": true,
     "declaration": true,
     "declarationMap": true,
     "esModuleInterop": true,

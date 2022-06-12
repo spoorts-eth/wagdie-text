@@ -1,0 +1,18 @@
+diff --git a/package.json b/package.json
+index d6dd5bb647973e9744689acacfda45d3e5bc2497..47ad4418c29024cc2992892a8fc3dbf1958365be 100644
+--- a/package.json
++++ b/package.json
+@@ -4,10 +4,10 @@
+   "description": "A JavaScript module that makes text stylish.",
+   "main": "dist/aesthetically.umd.js",
+   "exports": {
+-    "browser": "dist/aesthetically.js",
++    "browser": "./dist/aesthetically.js",
+     "node": {
+-      "import": "dist/aesthetically.js",
+-      "require": "dist/aesthetically.umd.js"
++      "import": "./dist/aesthetically.js",
++      "require": "./dist/aesthetically.umd.js"
+     }
+   },
+   "scripts": {
