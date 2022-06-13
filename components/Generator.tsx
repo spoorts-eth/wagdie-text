@@ -3,6 +3,8 @@ import cx from 'classnames'
 import isHotKey from 'is-hotkey'
 import React, {
   ClipboardEventHandler,
+  CompositionEventHandler,
+  FormEventHandler,
   KeyboardEventHandler,
   MouseEventHandler,
   useCallback,
@@ -117,6 +119,17 @@ export default function Generator() {
     [editor, fontEnabled, generateText]
   )
 
+  // Android and IME keyboards fire composition events instead of keydown
+  const onBeforeInput: CompositionEventHandler = useCallback(
+    (event) => {
+      console.log(event);
+      const isBold = CustomEditor.isBoldMarkActive(editor)
+      event.preventDefault()
+      editor.insertText(generateText(event.data, isBold))
+    },
+    [editor, generateText]
+  )
+
   const onPaste: ClipboardEventHandler = useCallback(
     (event) => {
       const { clipboardData } = event
@@ -128,10 +141,6 @@ export default function Generator() {
     [editor, generateText]
   )
 
-  const renderElement = useCallback((props: RenderElementProps) => {
-    return <Element {...props} />
-  }, [])
-
   const renderLeaf = useCallback((props: RenderLeafProps) => {
     return <Leaf {...props} />
   }, [])
@@ -142,9 +151,10 @@ export default function Generator() {
         <Topbar fontEnabled={fontEnabled} setFontEnabled={setFontEnabled} />
         <Editable
           autoFocus
-          renderElement={renderElement}
           renderLeaf={renderLeaf}
           placeholder="Type Something"
+          // TODO: work out how to pick onBeforeInput OR onKeyDown to make android work
+          // onBeforeInput={onBeforeInput as any} // type is wrong here android sends compositionEvent
           onKeyDown={onKeyDown}
           onPaste={onPaste}
           className={styles.content}
@@ -215,10 +225,6 @@ const Button = ({
 
 const Icon = ({ children }: React.PropsWithChildren) => {
   return <span className={cx('material-icons', styles.icon)}>{children}</span>
-}
-
-const Element = (props: RenderElementProps) => {
-  return <div className={styles.element}>{props.children}</div>
 }
 
 const Leaf = (props: RenderLeafProps) => {
