@@ -64,7 +64,7 @@ const CustomEditor = {
     // Transforms.setSelection(editor, currentSelection)
   },
 
-  toggleBoldMark(editor: ReactEditor) {
+  toggleBoldMark(editor: ReactEditor, fontEnabled?: boolean) {
     const isBold = CustomEditor.isBoldMarkActive(editor)
     if (isBold) {
       Editor.removeMark(editor, 'bold')
@@ -79,7 +79,7 @@ const CustomEditor = {
         const newFragment = transformTextInFragment(currentFragment, (text) => {
           return {
             ...text,
-            text: this.generateText(text.text, !isBold),
+            text: this.generateText(text.text, !isBold, fontEnabled),
           }
         })
         Transforms.insertFragment(editor, newFragment)
@@ -105,7 +105,7 @@ export default function Generator() {
       const isBold = CustomEditor.isBoldMarkActive(editor)
       if (isHotKey('mod+b', event)) {
         event.preventDefault()
-        CustomEditor.toggleBoldMark(editor)
+        CustomEditor.toggleBoldMark(editor, fontEnabled)
         return
       }
       if (event.metaKey) return
@@ -114,7 +114,7 @@ export default function Generator() {
         editor.insertText(generateText(event.key, isBold))
       }
     },
-    [editor, generateText]
+    [editor, fontEnabled, generateText]
   )
 
   const onPaste: ClipboardEventHandler = useCallback(
@@ -165,9 +165,9 @@ const Topbar = ({
   const toggleBold: MouseEventHandler = useCallback(
     (event) => {
       event.preventDefault()
-      CustomEditor.toggleBoldMark(editor)
+      CustomEditor.toggleBoldMark(editor, fontEnabled)
     },
-    [editor]
+    [editor, fontEnabled]
   )
   const toggleFontEnabled: MouseEventHandler = useCallback(
     (event) => {
