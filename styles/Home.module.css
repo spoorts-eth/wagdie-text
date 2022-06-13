@@ -9,11 +9,15 @@
   background: #353535;
 }
 
+.containerInner {
+  width: 100%;
+  max-width: 800px;
+}
+
 .header {
   display: flex;
   flex-direction: row;
   width: 100%;
-  max-width: 800px;
   height: 256px;
 }
 
@@ -40,4 +44,27 @@
 .logo {
   position: absolute;
   display: flex;
+}
+
+.footer {
+  display: flex;
+  padding: 1em 0em;
+  justify-content: center;
+}
+
+.credits {
+  cursor: pointer;
+  position: absolute;
+  right: 1em;
+  top: 1em;
+  display: flex;
+  background: #F2DCC4;
+  border-radius: 64px;
+  overflow: hidden;
+  align-items: center;
+  padding-right: 1em;
+  vertical-align: bottom;
+  flex-direction: row;
+  justify-content: center;
+  color: black;
 }
