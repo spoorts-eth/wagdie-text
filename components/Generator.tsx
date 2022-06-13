@@ -122,7 +122,6 @@ export default function Generator() {
   // Android and IME keyboards fire composition events instead of keydown
   const onBeforeInput: CompositionEventHandler = useCallback(
     (event) => {
-      console.log(event);
       const isBold = CustomEditor.isBoldMarkActive(editor)
       event.preventDefault()
       editor.insertText(generateText(event.data, isBold))
