@@ -44,18 +44,8 @@ const CustomEditor = {
     )
   },
   isBoldMarkActive(editor: ReactEditor) {
-    // console.log(Editor.marks(editor))
-    const [match] = Editor.nodes(editor, {
-      match: (node) => {
-        if ('bold' in node) {
-          return node.bold ?? false
-        }
-        return false
-      },
-      universal: true,
-    })
-
-    return !!match
+    const marks = Editor.marks(editor)
+    return marks ? marks.bold === true : false
   },
 
   toggleBoldMark(editor: ReactEditor) {
