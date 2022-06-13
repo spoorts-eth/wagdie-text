@@ -12,7 +12,7 @@ export default function Home() {
       </Head>
 
       <main className={styles.container}>
-        <h1>WAGDIE Text Generator</h1>
+        <h1 className={styles.title}>WAGDIE Text Generator</h1>
         <Generator />
       </main>
     </>

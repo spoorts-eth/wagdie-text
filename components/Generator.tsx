@@ -41,7 +41,7 @@ const CustomEditor = {
     )
   },
   isBoldMarkActive(editor: ReactEditor) {
-    console.log(Editor.marks(editor))
+    // console.log(Editor.marks(editor))
     const [match] = Editor.nodes(editor, {
       match: (node) => {
         if ('bold' in node) {
@@ -75,9 +75,7 @@ const CustomEditor = {
             text: this.generateText(text.text, !isBold),
           }
         })
-        console.log(newFragment)
         Transforms.insertFragment(editor, newFragment)
-        // todo work out how to keep this
         Transforms.setSelection(editor, currentSelection)
       }
     }
