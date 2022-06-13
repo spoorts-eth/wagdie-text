@@ -46,6 +46,14 @@
   display: flex;
 }
 
+.logoJaw {
+  position: absolute;
+}
+
+.logoHead {
+  position: absolute;
+}
+
 .footer {
   display: flex;
   padding: 1em 0em;

@@ -91,7 +91,7 @@ const CustomEditor = {
   },
 }
 
-export default function Generator() {
+export default function Generator({ onChange }: { onChange?: () => void }) {
   const [editor] = useState(() => withReact(createEditor()))
   const [fontEnabled, setFontEnabled] = useState(true)
 
@@ -113,10 +113,11 @@ export default function Generator() {
       if (event.metaKey) return
       if (/^[a-zA-Z\!\?]$/.test(event.key)) {
         event.preventDefault()
+        if (onChange) onChange();
         editor.insertText(generateText(event.key, isBold))
       }
     },
-    [editor, fontEnabled, generateText]
+    [editor, fontEnabled, generateText, onChange]
   )
 
   // Android and IME keyboards fire composition events instead of keydown
@@ -135,9 +136,10 @@ export default function Generator() {
       event.preventDefault()
       const text = clipboardData.getData('text/plain')
       const isBold = CustomEditor.isBoldMarkActive(editor)
+      if (onChange) onChange()
       editor.insertText(generateText(text, isBold))
     },
-    [editor, generateText]
+    [editor, generateText, onChange]
   )
 
   const renderElement = useCallback((props: RenderElementProps) => {
