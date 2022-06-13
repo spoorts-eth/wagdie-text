@@ -4,8 +4,10 @@
     max-width: 800px;
     background: #fff;
     padding: 1em;
+    font-size: 1.25em;
 }
 
 .element {
   width: 100%;
+  line-height: 1.5;
 }

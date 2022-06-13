@@ -6,7 +6,15 @@ import React, {
   useCallback,
   useState,
 } from 'react'
-import { createEditor, Descendant, Editor, Text, Transforms } from 'slate'
+import {
+  createEditor,
+  CustomTypes,
+  Descendant,
+  Editor,
+  Node,
+  Text,
+  Transforms,
+} from 'slate'
 import {
   Slate,
   Editable,
@@ -16,7 +24,7 @@ import {
   RenderElementProps,
 } from 'slate-react'
 
-import styles from '../styles/Generator.module.css';
+import styles from '../styles/Generator.module.css'
 
 const initialValue: Descendant[] = [
   {
@@ -27,10 +35,13 @@ const initialValue: Descendant[] = [
 
 const CustomEditor = {
   generateText(text: string, bold = false, style = 'fraktur') {
-    return Aesthetically.format(text, bold ? 'fraktur-bold' : 'fraktur')
+    return Aesthetically.format(
+      Aesthetically.unformat(text),
+      bold ? 'fraktur-bold' : 'fraktur'
+    )
   },
   isBoldMarkActive(editor: ReactEditor) {
-    console.log(Editor.marks(editor));
+    console.log(Editor.marks(editor))
     const [match] = Editor.nodes(editor, {
       match: (node) => {
         if ('bold' in node) {
@@ -52,12 +63,20 @@ const CustomEditor = {
       Editor.addMark(editor, 'bold', true)
     }
     if (editor.selection?.anchor) {
-      const currentSelection = {...editor.selection};
+      const currentSelection = { ...editor.selection }
       const text = Aesthetically.unformat(
         Editor.string(editor, editor.selection)
       )
       if (text.length) {
-        Transforms.insertText(editor, this.generateText(text, !isBold), {})
+        const currentFragment = editor.getFragment()
+        const newFragment = transformTextInFragment(currentFragment, (text) => {
+          return {
+            ...text,
+            text: this.generateText(text.text, !isBold),
+          }
+        })
+        console.log(newFragment)
+        Transforms.insertFragment(editor, newFragment)
         // todo work out how to keep this
         Transforms.setSelection(editor, currentSelection)
       }
@@ -108,10 +127,6 @@ export default function Generator() {
     return <Leaf {...props} />
   }, [])
 
-  const renderPlaceholder = useCallback(() => {
-    return <div>Type your shit</div>
-  }, [])
-
   return (
     <Slate editor={editor} value={initialValue}>
       <Editable
@@ -127,9 +142,7 @@ export default function Generator() {
 }
 
 const Element = (props: RenderElementProps) => {
-  return (
-    <div className={styles.element}>{props.children}</div>
-  )
+  return <div className={styles.element}>{props.children}</div>
 }
 
 const Leaf = (props: RenderLeafProps) => {
@@ -140,4 +153,23 @@ const Leaf = (props: RenderLeafProps) => {
       <Tag {...props.attributes}>{props.children}</Tag>
     </>
   )
+}
+
+function transformTextInFragment(
+  fragment: Descendant[],
+  transform: (text: CustomTypes['Text']) => CustomTypes['Text']
+) {
+  const out: Descendant[] = []
+  for (const node of fragment) {
+    if ('text' in node) {
+      out.push(transform(node))
+    } else {
+      const element: CustomTypes['Element'] = {
+        ...node,
+        children: node.children.map((text) => transform(text)),
+      }
+      out.push(element)
+    }
+  }
+  return out
 }
