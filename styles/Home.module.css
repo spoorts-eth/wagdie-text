@@ -27,7 +27,7 @@
   color: #9F9F9C;
   font-size: 2em;
   font-family: 'Alegreya';
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   width: 100%;
   text-shadow: 
@@ -53,6 +53,7 @@
 }
 
 .credits {
+  opacity: 0.5;
   cursor: pointer;
   position: absolute;
   right: 1em;
@@ -67,4 +68,8 @@
   flex-direction: row;
   justify-content: center;
   color: black;
+}
+
+.credits:hover {
+  opacity: 1;
 }
