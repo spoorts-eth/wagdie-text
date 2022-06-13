@@ -1,0 +1,11 @@
+.editable {
+    width: 100%;
+    min-height: 100%;
+    max-width: 800px;
+    background: #fff;
+    padding: 1em;
+}
+
+.element {
+  width: 100%;
+}

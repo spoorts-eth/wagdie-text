@@ -4,8 +4,6 @@ import React, {
   ClipboardEventHandler,
   KeyboardEventHandler,
   useCallback,
-  useLayoutEffect,
-  useRef,
   useState,
 } from 'react'
 import { createEditor, Descendant, Editor, Text, Transforms } from 'slate'
@@ -15,7 +13,10 @@ import {
   withReact,
   RenderLeafProps,
   ReactEditor,
+  RenderElementProps,
 } from 'slate-react'
+
+import styles from '../styles/Generator.module.css';
 
 const initialValue: Descendant[] = [
   {
@@ -99,6 +100,10 @@ export default function Generator() {
     [editor, generateText]
   )
 
+  const renderElement = useCallback((props: RenderElementProps) => {
+    return <Element {...props} />
+  }, [])
+
   const renderLeaf = useCallback((props: RenderLeafProps) => {
     return <Leaf {...props} />
   }, [])
@@ -110,12 +115,20 @@ export default function Generator() {
   return (
     <Slate editor={editor} value={initialValue}>
       <Editable
-        // renderLeaf={renderLeaf}
-        placeholder="Type something"
+        renderElement={renderElement}
+        renderLeaf={renderLeaf}
+        placeholder="Type Something"
         onKeyDown={onKeyDown}
         onPaste={onPaste}
+        className={styles.editable}
       />
     </Slate>
+  )
+}
+
+const Element = (props: RenderElementProps) => {
+  return (
+    <div className={styles.element}>{props.children}</div>
   )
 }
 
