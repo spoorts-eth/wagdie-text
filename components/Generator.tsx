@@ -140,6 +140,10 @@ export default function Generator() {
     [editor, generateText]
   )
 
+  const renderElement = useCallback((props: RenderElementProps) => {
+    return <Element {...props} />
+  }, [])
+
   const renderLeaf = useCallback((props: RenderLeafProps) => {
     return <Leaf {...props} />
   }, [])
@@ -151,6 +155,7 @@ export default function Generator() {
         <Editable
           autoFocus
           renderLeaf={renderLeaf}
+          renderElement={renderElement}
           placeholder="Type Something"
           // TODO: work out how to pick onBeforeInput OR onKeyDown to make android work
           // onBeforeInput={onBeforeInput as any} // type is wrong here android sends compositionEvent
@@ -224,6 +229,14 @@ const Button = ({
 
 const Icon = ({ children }: React.PropsWithChildren) => {
   return <span className={cx('material-icons', styles.icon)}>{children}</span>
+}
+
+const Element = (props: RenderElementProps) => {
+  return (
+    <div {...props.attributes} className={styles.element}>
+      {props.children}
+    </div>
+  )
 }
 
 const Leaf = (props: RenderLeafProps) => {
