@@ -1,14 +1,38 @@
-.editable {
+.editor {
     width: 100%;
     min-height: 100%;
     max-width: 800px;
     background: #fff;
-    padding: 1em;
     font-size: 1.25em;
     box-shadow: 0px 3px 6px 1px rgba(0,0,0,0.025);
+}
+
+.content {
+  padding: 1em;
 }
 
 .element {
   width: 100%;
   line-height: 1.5;
+}
+
+.topbar {
+  border-bottom: 1px solid #c3c3c3;
+  padding: 0.25em;
+}
+
+.button {
+  padding: 0.25em;
+  cursor: pointer;
+  background: #fff;
+  vertical-align: bottom;
+}
+
+.button:hover {
+  background: #c3c3c3;
+}
+
+.button.active {
+  background: #353535;
+  color: #fff;
 }

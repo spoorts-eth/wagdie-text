@@ -1,8 +1,10 @@
 import Aesthetically from 'aesthetically'
+import cx from 'classnames'
 import isHotKey from 'is-hotkey'
 import React, {
   ClipboardEventHandler,
   KeyboardEventHandler,
+  MouseEventHandler,
   useCallback,
   useState,
 } from 'react'
@@ -22,6 +24,7 @@ import {
   RenderLeafProps,
   ReactEditor,
   RenderElementProps,
+  useSlate,
 } from 'slate-react'
 
 import styles from '../styles/Generator.module.css'
@@ -124,18 +127,40 @@ export default function Generator() {
   const renderLeaf = useCallback((props: RenderLeafProps) => {
     return <Leaf {...props} />
   }, [])
-
+  console.log('wut');
   return (
-    <Slate editor={editor} value={initialValue}>
-      <Editable
-        renderElement={renderElement}
-        renderLeaf={renderLeaf}
-        placeholder="Type Something"
-        onKeyDown={onKeyDown}
-        onPaste={onPaste}
-        className={styles.editable}
-      />
-    </Slate>
+    <div className={styles.editor}>
+      <Slate editor={editor} value={initialValue}>
+        <Topbar />
+        <Editable
+          autoFocus
+          renderElement={renderElement}
+          renderLeaf={renderLeaf}
+          placeholder="Type Something"
+          onKeyDown={onKeyDown}
+          onPaste={onPaste}
+          className={styles.content}
+        />
+      </Slate>
+    </div>
+  )
+}
+
+const Topbar = () => {
+  const editor = useSlate();
+  const toggleBold: MouseEventHandler = useCallback((event) => {
+    event.preventDefault();
+    CustomEditor.toggleBoldMark(editor)
+  }, [editor])
+  console.log(CustomEditor.isBoldMarkActive(editor));
+  return (
+    <div className={styles.topbar}>
+      <span onMouseDown={toggleBold} className={cx(
+        styles.button,
+        'material-icons',
+        { [styles.active]: CustomEditor.isBoldMarkActive(editor) }
+      )}>format_bold</span>
+    </div>
   )
 }
 
