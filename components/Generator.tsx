@@ -110,7 +110,7 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
         CustomEditor.toggleBoldMark(editor, fontEnabled)
         return
       }
-      if (event.metaKey) return
+      if (event.metaKey || event.ctrlKey) return
       if (/^[a-zA-Z\!\?]$/.test(event.key)) {
         event.preventDefault()
         if (onChange) onChange();
