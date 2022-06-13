@@ -13,8 +13,6 @@ import {
   CustomTypes,
   Descendant,
   Editor,
-  Node,
-  Text,
   Transforms,
 } from 'slate'
 import {
@@ -37,15 +35,33 @@ const initialValue: Descendant[] = [
 ]
 
 const CustomEditor = {
-  generateText(text: string, bold = false, style = 'fraktur') {
-    return Aesthetically.format(
-      Aesthetically.unformat(text),
-      bold ? 'fraktur-bold' : 'fraktur'
-    )
+  generateText(text: string, bold = false, fontEnabled = true) {
+    const baseText = Aesthetically.unformat(text)
+    if (!fontEnabled) return baseText
+    return Aesthetically.format(baseText, bold ? 'fraktur-bold' : 'fraktur')
   },
   isBoldMarkActive(editor: ReactEditor) {
     const marks = Editor.marks(editor)
     return marks ? marks.bold === true : false
+  },
+
+  toggleFontEnabled(editor: ReactEditor, fontEnabled?: boolean) {
+    const isBold = CustomEditor.isBoldMarkActive(editor)
+    const currentSelection = { ...editor.selection }
+    // select all
+    Transforms.select(editor, {
+      anchor: Editor.start(editor, []),
+      focus: Editor.end(editor, []),
+    })
+    const newFragment = transformTextInFragment(editor.children, (text) => {
+      return {
+        ...text,
+        text: this.generateText(text.text, text.bold, fontEnabled),
+      }
+    })
+    Transforms.insertFragment(editor, newFragment)
+    // todo how to make this work (we probably need to count the grapheme clusters)
+    // Transforms.setSelection(editor, currentSelection)
   },
 
   toggleBoldMark(editor: ReactEditor) {
@@ -57,9 +73,7 @@ const CustomEditor = {
     }
     if (editor.selection?.anchor) {
       const currentSelection = { ...editor.selection }
-      const text = Aesthetically.unformat(
-        Editor.string(editor, editor.selection)
-      )
+      const text = Editor.string(editor, editor.selection)
       if (text.length) {
         const currentFragment = editor.getFragment()
         const newFragment = transformTextInFragment(currentFragment, (text) => {
@@ -77,10 +91,14 @@ const CustomEditor = {
 
 export default function Generator() {
   const [editor] = useState(() => withReact(createEditor()))
+  const [fontEnabled, setFontEnabled] = useState(true)
 
-  const generateText = useCallback((text: string, bold = false) => {
-    return CustomEditor.generateText(text, bold)
-  }, [])
+  const generateText = useCallback(
+    (text: string, bold = false) => {
+      return CustomEditor.generateText(text, bold, fontEnabled)
+    },
+    [fontEnabled]
+  )
 
   const onKeyDown: KeyboardEventHandler = useCallback(
     (event) => {
@@ -117,11 +135,11 @@ export default function Generator() {
   const renderLeaf = useCallback((props: RenderLeafProps) => {
     return <Leaf {...props} />
   }, [])
-  console.log('wut');
+
   return (
     <div className={styles.editor}>
       <Slate editor={editor} value={initialValue}>
-        <Topbar />
+        <Topbar fontEnabled={fontEnabled} setFontEnabled={setFontEnabled} />
         <Editable
           autoFocus
           renderElement={renderElement}
@@ -136,22 +154,67 @@ export default function Generator() {
   )
 }
 
-const Topbar = () => {
-  const editor = useSlate();
-  const toggleBold: MouseEventHandler = useCallback((event) => {
-    event.preventDefault();
-    CustomEditor.toggleBoldMark(editor)
-  }, [editor])
-  console.log(CustomEditor.isBoldMarkActive(editor));
+const Topbar = ({
+  fontEnabled,
+  setFontEnabled,
+}: {
+  fontEnabled?: boolean
+  setFontEnabled: (enabled: boolean) => void
+}) => {
+  const editor = useSlate()
+  const toggleBold: MouseEventHandler = useCallback(
+    (event) => {
+      event.preventDefault()
+      CustomEditor.toggleBoldMark(editor)
+    },
+    [editor]
+  )
+  const toggleFontEnabled: MouseEventHandler = useCallback(
+    (event) => {
+      event.preventDefault()
+      setFontEnabled(!fontEnabled)
+      CustomEditor.toggleFontEnabled(editor, !fontEnabled)
+    },
+    [editor, fontEnabled, setFontEnabled]
+  )
   return (
     <div className={styles.topbar}>
-      <span onMouseDown={toggleBold} className={cx(
-        styles.button,
-        'material-icons',
-        { [styles.active]: CustomEditor.isBoldMarkActive(editor) }
-      )}>format_bold</span>
+      <div>
+        <Button
+          isActive={CustomEditor.isBoldMarkActive(editor)}
+          onMouseDown={toggleBold}
+        >
+          <Icon>format_bold</Icon>
+        </Button>
+      </div>
+      <div>
+        <Button isActive={fontEnabled} onMouseDown={toggleFontEnabled}>
+          {fontEnabled ? 'ON' : 'OFF'}
+        </Button>
+      </div>
     </div>
   )
+}
+
+const Button = ({
+  children,
+  isActive,
+  ...props
+}: React.ComponentProps<'span'> & { isActive?: boolean }) => {
+  return (
+    <span
+      className={cx(styles.button, {
+        [styles.active]: isActive,
+      })}
+      {...props}
+    >
+      {children}
+    </span>
+  )
+}
+
+const Icon = ({ children }: React.PropsWithChildren) => {
+  return <span className={cx('material-icons', styles.icon)}>{children}</span>
 }
 
 const Element = (props: RenderElementProps) => {
@@ -161,11 +224,7 @@ const Element = (props: RenderElementProps) => {
 const Leaf = (props: RenderLeafProps) => {
   const Tag = props.leaf.bold ? 'strong' : 'span'
 
-  return (
-    <>
-      <Tag {...props.attributes}>{props.children}</Tag>
-    </>
-  )
+  return <Tag {...props.attributes}>{props.children}</Tag>
 }
 
 function transformTextInFragment(

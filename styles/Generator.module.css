@@ -17,15 +17,19 @@
 }
 
 .topbar {
+  display: flex;
   border-bottom: 1px solid #c3c3c3;
   padding: 0.25em;
+  justify-content: space-between;
 }
 
 .button {
+  display: flex;
   padding: 0.25em;
   cursor: pointer;
+  color: black;
   background: #fff;
-  vertical-align: bottom;
+  font-weight: bold;
 }
 
 .button:hover {
@@ -35,4 +39,8 @@
 .button.active {
   background: #353535;
   color: #fff;
+}
+
+.icon {
+  vertical-align: bottom;
 }
