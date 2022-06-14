@@ -142,6 +142,16 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
     [editor, generateText, onChange]
   )
 
+  const copyContents = useCallback(() => {
+    const text = editor.children.map((n) => {
+      if ('type' in n) {
+        return n.children.map((c) => c.text).join('')
+      }
+      return n.text;
+    }).join('\n');
+    navigator.clipboard.writeText(text)
+  }, [editor]);
+
   const renderElement = useCallback((props: RenderElementProps) => {
     return <Element {...props} />
   }, [])
@@ -165,8 +175,50 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
           onPaste={onPaste}
           className={styles.content}
         />
+        <div className={styles.bottombar}>
+          <ActionButton onClick={copyContents}>
+            <Icon>copy_all</Icon>
+          </ActionButton>
+        </div>
       </Slate>
     </div>
+  )
+}
+
+const ActionButton = ({
+  children,
+  size,
+  onClick,
+  ...props
+}: React.ComponentProps<'span'> & {
+  size?: ButtonSize
+  onClick: MouseEventHandler
+}) => {
+  const button = useRef<HTMLSpanElement>(null)
+  const onMouseDown = useCallback(
+    (event) => {
+      button.current?.animate(
+        [
+          { transform: 'scale(0.9)', easing: 'ease-in-out' },
+          { transform: 'scale(1)' },
+        ],
+        100
+      )
+      onClick(event)
+    },
+    [onClick]
+  )
+  return (
+    <span
+      className={cx(styles.actionButton, {
+        [styles.medium]: size === ButtonSize.Medium,
+      })}
+      ref={button}
+      onMouseDown={onMouseDown}
+      {...props}
+    >
+      {children}
+    </span>
   )
 }
 
@@ -195,32 +247,45 @@ const Topbar = ({
   )
   return (
     <div className={styles.topbar}>
-      <div>
-        <Button
+      <div className={styles.topbarSection}>
+        <ToggleButton
           isActive={CustomEditor.isBoldMarkActive(editor)}
           onMouseDown={toggleBold}
         >
           <Icon>format_bold</Icon>
-        </Button>
+        </ToggleButton>
       </div>
       <div>
-        <Button isActive={fontEnabled} onMouseDown={toggleFontEnabled}>
+        <ToggleButton
+          isActive={fontEnabled}
+          onMouseDown={toggleFontEnabled}
+          size={ButtonSize.Medium}
+        >
           {fontEnabled ? 'ON' : 'OFF'}
-        </Button>
+        </ToggleButton>
       </div>
     </div>
   )
 }
 
-const Button = ({
+enum ButtonSize {
+  Medium,
+}
+
+const ToggleButton = ({
   children,
   isActive,
+  size,
   ...props
-}: React.ComponentProps<'span'> & { isActive?: boolean }) => {
+}: React.ComponentProps<'span'> & {
+  isActive?: boolean
+  size?: ButtonSize
+}) => {
   return (
     <span
-      className={cx(styles.button, {
+      className={cx(styles.toggleButton, {
         [styles.active]: isActive,
+        [styles.medium]: size === ButtonSize.Medium,
       })}
       {...props}
     >
