@@ -1,13 +1,16 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import { useCallback, useRef } from 'react'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+
 import Generator from '../components/Generator'
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
-  const logoJaw = useRef<HTMLDivElement>(null);
+  const logoJaw = useRef<HTMLDivElement>(null)
   const animate = useCallback(() => {
-    if (!logoJaw.current) return;
+    if (!logoJaw.current) return
     logoJaw.current.animate(
       [
         { transform: 'translateY(0px)', easing: 'ease-out' },
@@ -16,7 +19,7 @@ export default function Home() {
       ],
       250
     )
-  }, []);
+  }, [])
   return (
     <>
       <Head>
@@ -93,6 +96,18 @@ export default function Home() {
             </div>
           </a>
         </div>
+        <ToastContainer
+          position="bottom-center"
+          autoClose={1000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme='dark'
+        />
       </main>
     </>
   )

@@ -4,7 +4,6 @@ import isHotKey from 'is-hotkey'
 import React, {
   ClipboardEventHandler,
   CompositionEventHandler,
-  FormEventHandler,
   KeyboardEventHandler,
   MouseEventHandler,
   useCallback,
@@ -27,6 +26,7 @@ import {
   RenderElementProps,
   useSlate,
 } from 'slate-react'
+import { toast } from 'react-toastify'
 
 import styles from '../styles/Generator.module.css'
 
@@ -114,7 +114,7 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
       if (event.metaKey || event.ctrlKey) return
       if (/^[a-zA-Z\!\?]$/.test(event.key)) {
         event.preventDefault()
-        if (onChange) onChange();
+        if (onChange) onChange()
         editor.insertText(generateText(event.key, isBold))
       }
     },
@@ -143,15 +143,22 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
     [editor, generateText, onChange]
   )
 
-  const copyContents = useCallback(() => {
-    const text = editor.children.map((n) => {
-      if ('type' in n) {
-        return n.children.map((c) => c.text).join('')
-      }
-      return n.text;
-    }).join('\n');
-    navigator.clipboard.writeText(text)
-  }, [editor]);
+  const copyContents = useCallback(async () => {
+    const text = editor.children
+      .map((n) => {
+        if ('type' in n) {
+          return n.children.map((c) => c.text).join('')
+        }
+        return n.text
+      })
+      .join('\n')
+    try {
+      await navigator.clipboard.writeText(text)
+      toast('Contents copied to clipboard', { toastId: 'copyContents' })
+    } catch (error) {
+      toast.error("Couldn't copy contents", { toastId: 'copyContents' })
+    }
+  }, [editor])
 
   const renderElement = useCallback((props: RenderElementProps) => {
     return <Element {...props} />
@@ -196,7 +203,7 @@ const ActionButton = ({
   onClick: MouseEventHandler
 }) => {
   const button = useRef<HTMLSpanElement>(null)
-  const onMouseDown = useCallback(
+  const onMouseDown: MouseEventHandler = useCallback(
     (event) => {
       button.current?.animate(
         [
