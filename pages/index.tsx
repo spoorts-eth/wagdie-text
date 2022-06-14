@@ -35,6 +35,7 @@ export default function Home() {
                   alt="WAGDIE"
                   width={256}
                   height={256}
+                  quality={100}
                 />
               </div>
               <div className={styles.logoJaw} ref={logoJaw}>
@@ -43,6 +44,7 @@ export default function Home() {
                   alt="WAGDIE jaw"
                   width={256}
                   height={256}
+                  quality={100}
                 />
               </div>
               <div className={styles.logoHead}>
@@ -51,6 +53,7 @@ export default function Home() {
                   alt="WAGDIE head"
                   width={256}
                   height={256}
+                  quality={100}
                 />
               </div>
             </div>
@@ -84,6 +87,7 @@ export default function Home() {
                 alt="spoorts.eth"
                 width={64}
                 height={64}
+                quality={100}
               />
               <span>Created by Spoorts.eth</span>
             </div>
