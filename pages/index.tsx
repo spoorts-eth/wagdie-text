@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>WAGDIE Text Generator</title>
+        <title>WAGDIE Chat</title>
         <meta name="description" content="Generate WAGDIE style text" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -61,7 +61,7 @@ export default function Home() {
                 />
               </div>
             </div>
-            <h1 className={styles.title}>WAGDIE Text Generator</h1>
+            <h1 className={styles.title}>WAGDIE Chat</h1>
           </div>
 
           <Generator onChange={animate} />
