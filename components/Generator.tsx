@@ -14,6 +14,7 @@ import {
   CustomTypes,
   Descendant,
   Editor,
+  Path,
   Transforms,
 } from 'slate'
 import {
@@ -49,7 +50,6 @@ const CustomEditor = {
   },
 
   toggleFontEnabled(editor: ReactEditor, fontEnabled?: boolean) {
-    const isBold = CustomEditor.isBoldMarkActive(editor)
     const currentSelection = { ...editor.selection }
     // select all
     Transforms.select(editor, {
@@ -67,27 +67,12 @@ const CustomEditor = {
     // Transforms.setSelection(editor, currentSelection)
   },
 
-  toggleBoldMark(editor: ReactEditor, fontEnabled?: boolean) {
+  toggleBoldMark(editor: ReactEditor) {
     const isBold = CustomEditor.isBoldMarkActive(editor)
     if (isBold) {
       Editor.removeMark(editor, 'bold')
     } else {
       Editor.addMark(editor, 'bold', true)
-    }
-    if (editor.selection?.anchor) {
-      const currentSelection = { ...editor.selection }
-      const text = Editor.string(editor, editor.selection)
-      if (text.length) {
-        const currentFragment = editor.getFragment()
-        const newFragment = transformTextInFragment(currentFragment, (text) => {
-          return {
-            ...text,
-            text: this.generateText(text.text, !isBold, fontEnabled),
-          }
-        })
-        Transforms.insertFragment(editor, newFragment)
-        Transforms.setSelection(editor, currentSelection)
-      }
     }
   },
 
@@ -106,10 +91,8 @@ const CustomEditor = {
 export default function Generator({ onChange }: { onChange?: () => void }) {
   const [fontEnabled, setFontEnabled] = useState(true)
   // used by normalizeNode below
-  const fontEnabledRef = useRef(fontEnabled);
-  fontEnabledRef.current = fontEnabled;
-
-  console.log(fontEnabledRef.current, fontEnabled);
+  const fontEnabledRef = useRef(fontEnabled)
+  fontEnabledRef.current = fontEnabled
 
   const [editor] = useState(() => {
     const editor = withReact(createEditor())
@@ -119,7 +102,6 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
         const { bold, text } = node
         const normalizedText = generateText(text, bold)
         if (text !== normalizedText) {
-          console.log(node);
           const { selection } = editor
           Transforms.removeNodes(editor, { at: path })
           Transforms.insertNodes(
@@ -128,32 +110,28 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
             { at: path }
           )
           if (selection) {
-            const {
-              anchor: { path: anchorPath, offset: anchorOffset },
-              focus: { path: focusPath, offset: focusOffset },
-            } = selection
+            const { anchor, focus } = selection
+            const { path: anchorPath, offset: anchorOffset } = anchor
+            const { path: focusPath, offset: focusOffset } = focus
+            const isAnchorNode = isPathEqual(anchorPath, path)
+            const isFocusNode = isPathEqual(focusPath, path)
             Transforms.select(editor, {
-              anchor: {
+              anchor: isAnchorNode ? {
                 path: anchorPath,
                 offset: convertStringOffset(text, normalizedText, anchorOffset),
-              },
-              focus: {
+              } : anchor,
+              focus: isFocusNode ? {
                 path: focusPath,
                 offset: convertStringOffset(text, normalizedText, focusOffset),
-              },
+              } : focus,
             })
           }
-          // console.log('after', currentSelection)
           return
         }
       }
       baseNormalizeNode([node, path])
     }
-    // const baseOnChange = editor.onChange;
-    // editor.onChange = () => {
-    //   if (onChange) onChange();
-    //   baseOnChange();
-    // }
+
     return editor
   })
 
@@ -162,29 +140,26 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
     CustomEditor.toggleFontEnabled(editor, !fontEnabled)
   }, [editor, fontEnabled])
 
-  const generateText = useCallback(
-    (text: string, bold = false) => {
-      console.log(fontEnabledRef.current);
-      // use the ref so that normalizeNode can use it
-      return CustomEditor.generateText(text, bold, fontEnabledRef.current)
-    },
-    []
-  )
+  const generateText = useCallback((text: string, bold = false) => {
+    // use the ref so that normalizeNode can use it
+    return CustomEditor.generateText(text, bold, fontEnabledRef.current)
+  }, [])
 
   const onKeyDown: KeyboardEventHandler = useCallback(
     (event) => {
       if (isHotKey('mod+b', event)) {
         event.preventDefault()
-        CustomEditor.toggleBoldMark(editor, fontEnabledRef.current)
+        CustomEditor.toggleBoldMark(editor)
         return true
       }
-      if (onChange) onChange()
+      // TODO: IME keyboards don't fire this, how to handle them?
+      if (!event.metaKey && !event.ctrlKey && onChange) onChange()
     },
     [editor, onChange]
   )
 
   const copyContents = useCallback(async () => {
-    const text = CustomEditor.getAllText(editor);
+    const text = CustomEditor.getAllText(editor)
     try {
       await navigator.clipboard.writeText(text)
       toast('Contents copied to clipboard', { toastId: 'copyContents' })
@@ -196,7 +171,9 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
   const tweetContents = useCallback(async () => {
     const text = CustomEditor.getAllText(editor)
     const a = document.createElement('a')
-    a.href = `https://twitter.com/intent/tweet?hashtags=WAGDIE&text=${encodeURIComponent(text)}`;
+    a.href = `https://twitter.com/intent/tweet?hashtags=WAGDIE&text=${encodeURIComponent(
+      text
+    )}`
     a.setAttribute('target', '_blank')
     a.click()
   }, [editor])
@@ -218,10 +195,7 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
           renderLeaf={renderLeaf}
           renderElement={renderElement}
           placeholder="Type Something"
-          // TODO: work out how to pick onBeforeInput OR onKeyDown to make android work
-          // onBeforeInput={onBeforeInput as any} // type is wrong here android sends compositionEvent
           onKeyDown={onKeyDown}
-          // onPaste={onPaste}
           className={styles.content}
         />
         <div className={styles.bottombar}>
@@ -285,9 +259,9 @@ const Topbar = ({
   const toggleBold: MouseEventHandler = useCallback(
     (event) => {
       event.preventDefault()
-      CustomEditor.toggleBoldMark(editor, fontEnabled)
+      CustomEditor.toggleBoldMark(editor)
     },
-    [editor, fontEnabled]
+    [editor]
   )
   const toggleFontEnabled: MouseEventHandler = useCallback(
     (event) => {
@@ -372,6 +346,10 @@ function transformTextInFragment(
     }
   }
   return out
+}
+
+function isPathEqual(path1: Path, path2: Path) {
+  return path1.every((n, i) => n === path2[i])
 }
 
 // When coverting between regular alphabet (each character is one unicode code point) and
