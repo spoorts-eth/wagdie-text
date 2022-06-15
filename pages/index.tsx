@@ -29,7 +29,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>WAGDIE Text Generator</title>
+        <title>WAGDIE Chat</title>
         <meta name="description" content="Generate WAGDIE style text" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -69,7 +69,7 @@ export default function Home() {
             <h1
               className={cx(styles.title, { [styles.hidden]: !titleVisible })}
             >
-              WAGDIE Text Generator
+              WAGDIE Chat
             </h1>
           </div>
 
