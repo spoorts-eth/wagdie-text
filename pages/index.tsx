@@ -1,6 +1,7 @@
+import cx from 'classnames'
 import Head from 'next/head'
 import Image from 'next/image'
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -10,6 +11,10 @@ import styles from '../styles/Home.module.css'
 
 export default function Home() {
   const logoJaw = useRef<HTMLDivElement>(null)
+  const [titleVisible, setTitleVisible] = useState(true)
+  const toggleTitle = useCallback(() => {
+    setTitleVisible(!titleVisible)
+  }, [titleVisible])
   const animate = useCallback(() => {
     if (!logoJaw.current) return
     logoJaw.current.animate(
@@ -31,7 +36,7 @@ export default function Home() {
 
       <main className={styles.container}>
         <div className={styles.containerInner}>
-          <div className={styles.header}>
+          <div className={styles.header} onClick={toggleTitle}>
             <div className={styles.logo}>
               <div className={styles.logoBg}>
                 <Image
@@ -61,7 +66,11 @@ export default function Home() {
                 />
               </div>
             </div>
-            <h1 className={styles.title}>WAGDIE Text Generator</h1>
+            <h1
+              className={cx(styles.title, { [styles.hidden]: !titleVisible })}
+            >
+              WAGDIE Text Generator
+            </h1>
           </div>
 
           <Generator onChange={animate} />
@@ -101,7 +110,7 @@ export default function Home() {
           pauseOnFocusLoss
           draggable
           pauseOnHover
-          theme='dark'
+          theme="dark"
         />
       </main>
     </>
