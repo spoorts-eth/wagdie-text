@@ -23,6 +23,7 @@
 }
 
 .title {
+  user-select: none;
   position: relative;
   display: flex;
   color: #9F9F9C;
