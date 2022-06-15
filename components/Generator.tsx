@@ -2,11 +2,10 @@ import Aesthetically from 'aesthetically'
 import cx from 'classnames'
 import isHotKey from 'is-hotkey'
 import React, {
-  ClipboardEventHandler,
-  CompositionEventHandler,
   KeyboardEventHandler,
   MouseEventHandler,
   useCallback,
+  useEffect,
   useRef,
   useState,
 } from 'react'
@@ -93,54 +92,83 @@ const CustomEditor = {
 }
 
 export default function Generator({ onChange }: { onChange?: () => void }) {
-  const [editor] = useState(() => withReact(createEditor()))
   const [fontEnabled, setFontEnabled] = useState(true)
+  // used by normalizeNode below
+  const fontEnabledRef = useRef(fontEnabled);
+  fontEnabledRef.current = fontEnabled;
+
+  console.log(fontEnabledRef.current, fontEnabled);
+
+  const [editor] = useState(() => {
+    const editor = withReact(createEditor())
+    const baseNormalizeNode = editor.normalizeNode
+    editor.normalizeNode = ([node, path]) => {
+      if ('text' in node) {
+        const { bold, text } = node
+        const normalizedText = generateText(text, bold)
+        if (text !== normalizedText) {
+          console.log(node);
+          const { selection } = editor
+          Transforms.removeNodes(editor, { at: path })
+          Transforms.insertNodes(
+            editor,
+            { ...node, text: normalizedText },
+            { at: path }
+          )
+          if (selection) {
+            const {
+              anchor: { path: anchorPath, offset: anchorOffset },
+              focus: { path: focusPath, offset: focusOffset },
+            } = selection
+            Transforms.select(editor, {
+              anchor: {
+                path: anchorPath,
+                offset: convertStringOffset(text, normalizedText, anchorOffset),
+              },
+              focus: {
+                path: focusPath,
+                offset: convertStringOffset(text, normalizedText, focusOffset),
+              },
+            })
+          }
+          // console.log('after', currentSelection)
+          return
+        }
+      }
+      baseNormalizeNode([node, path])
+    }
+    // const baseOnChange = editor.onChange;
+    // editor.onChange = () => {
+    //   if (onChange) onChange();
+    //   baseOnChange();
+    // }
+    return editor
+  })
+
+  // when the fontEnabled state changes, we need to update the text in the editor
+  useEffect(() => {
+    CustomEditor.toggleFontEnabled(editor, !fontEnabled)
+  }, [editor, fontEnabled])
 
   const generateText = useCallback(
     (text: string, bold = false) => {
-      return CustomEditor.generateText(text, bold, fontEnabled)
+      console.log(fontEnabledRef.current);
+      // use the ref so that normalizeNode can use it
+      return CustomEditor.generateText(text, bold, fontEnabledRef.current)
     },
-    [fontEnabled]
+    []
   )
 
   const onKeyDown: KeyboardEventHandler = useCallback(
     (event) => {
-      const isBold = CustomEditor.isBoldMarkActive(editor)
       if (isHotKey('mod+b', event)) {
         event.preventDefault()
-        CustomEditor.toggleBoldMark(editor, fontEnabled)
-        return
+        CustomEditor.toggleBoldMark(editor, fontEnabledRef.current)
+        return true
       }
-      if (event.metaKey || event.ctrlKey) return
-      if (/^[a-zA-Z\!\?]$/.test(event.key)) {
-        event.preventDefault()
-        if (onChange) onChange()
-        editor.insertText(generateText(event.key, isBold))
-      }
-    },
-    [editor, fontEnabled, generateText, onChange]
-  )
-
-  // Android and IME keyboards fire composition events instead of keydown
-  const onBeforeInput: CompositionEventHandler = useCallback(
-    (event) => {
-      const isBold = CustomEditor.isBoldMarkActive(editor)
-      event.preventDefault()
-      editor.insertText(generateText(event.data, isBold))
-    },
-    [editor, generateText]
-  )
-
-  const onPaste: ClipboardEventHandler = useCallback(
-    (event) => {
-      const { clipboardData } = event
-      event.preventDefault()
-      const text = clipboardData.getData('text/plain')
-      const isBold = CustomEditor.isBoldMarkActive(editor)
       if (onChange) onChange()
-      editor.insertText(generateText(text, isBold))
     },
-    [editor, generateText, onChange]
+    [editor, onChange]
   )
 
   const copyContents = useCallback(async () => {
@@ -180,7 +208,7 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
           // TODO: work out how to pick onBeforeInput OR onKeyDown to make android work
           // onBeforeInput={onBeforeInput as any} // type is wrong here android sends compositionEvent
           onKeyDown={onKeyDown}
-          onPaste={onPaste}
+          // onPaste={onPaste}
           className={styles.content}
         />
         <div className={styles.bottombar}>
@@ -249,9 +277,8 @@ const Topbar = ({
     (event) => {
       event.preventDefault()
       setFontEnabled(!fontEnabled)
-      CustomEditor.toggleFontEnabled(editor, !fontEnabled)
     },
-    [editor, fontEnabled, setFontEnabled]
+    [fontEnabled, setFontEnabled]
   )
   return (
     <div className={styles.topbar}>
@@ -337,4 +364,20 @@ function transformTextInFragment(
     }
   }
   return out
+}
+
+// When coverting between regular alphabet (each character is one unicode code point) and
+// fraktur (each character is two unicode code points) we need to move the cursor to the correct
+// position.
+//
+// This function takes an input string and offset and returns the offset in the new string such that
+// it points at the nth the character still.
+function convertStringOffset(
+  inputString: string,
+  outputString: string,
+  offset: number
+) {
+  // iterators work on unicode characters not code points
+  const inputCharCount = [...inputString.slice(0, offset)].length
+  return [...outputString].slice(0, inputCharCount).join('').length
 }
