@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
-
 html,
 body {
   padding: 0;
@@ -20,4 +18,41 @@ a {
 
 * {
   box-sizing: border-box;
+}
+
+@font-face {
+  font-family: 'wagdie-icons';
+  src: url('/fonts/wagdie-icons.eot?6vr7f8');
+  src: url('/fonts/wagdie-icons.eot?6vr7f8#iefix') format('embedded-opentype'),
+    url('/fonts/wagdie-icons.ttf?6vr7f8') format('truetype'),
+    url('/fonts/wagdie-icons.woff?6vr7f8') format('woff'),
+    url('/fonts/wagdie-icons.svg?6vr7f8#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+.icon {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'wagdie-icons' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Enable Ligatures ================ */
+  letter-spacing: 0;
+  -webkit-font-feature-settings: 'liga';
+  -moz-font-feature-settings: 'liga=1';
+  -moz-font-feature-settings: 'liga';
+  -ms-font-feature-settings: 'liga' 1;
+  font-feature-settings: 'liga';
+  -webkit-font-variant-ligatures: discretionary-ligatures;
+  font-variant-ligatures: discretionary-ligatures;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

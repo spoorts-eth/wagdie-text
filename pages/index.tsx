@@ -5,6 +5,7 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 import Generator from '../components/Generator'
+import Icon from '../components/Icon'
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
@@ -70,13 +71,7 @@ export default function Home() {
               target="_blank"
               rel="noreferrer"
             >
-              <Image
-                src="/github.svg"
-                alt="GitHub"
-                width={32}
-                height={32}
-                color="white"
-              />
+              <Icon>github</Icon>
             </a>
           </div>
           <a

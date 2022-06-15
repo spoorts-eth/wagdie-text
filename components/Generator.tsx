@@ -29,6 +29,7 @@ import {
 import { toast } from 'react-toastify'
 
 import styles from '../styles/Generator.module.css'
+import Icon from './Icon'
 
 const initialValue: Descendant[] = [
   {
@@ -185,7 +186,7 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
         />
         <div className={styles.bottombar}>
           <ActionButton onClick={copyContents}>
-            <Icon>copy_all</Icon>
+            <Icon>copy</Icon>
           </ActionButton>
         </div>
       </Slate>
@@ -260,16 +261,15 @@ const Topbar = ({
           isActive={CustomEditor.isBoldMarkActive(editor)}
           onMouseDown={toggleBold}
         >
-          <Icon>format_bold</Icon>
+          <Icon>bold</Icon>
         </ToggleButton>
       </div>
       <div>
         <ToggleButton
           isActive={fontEnabled}
           onMouseDown={toggleFontEnabled}
-          size={ButtonSize.Medium}
         >
-          {fontEnabled ? 'ON' : 'OFF'}
+          <Icon>{fontEnabled ? 'toggle_on' : 'toggle_off'}</Icon>
         </ToggleButton>
       </div>
     </div>
@@ -300,10 +300,6 @@ const ToggleButton = ({
       {children}
     </span>
   )
-}
-
-const Icon = ({ children }: React.PropsWithChildren) => {
-  return <span className={cx('material-icons', styles.icon)}>{children}</span>
 }
 
 const Element = (props: RenderElementProps) => {
