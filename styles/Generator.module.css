@@ -38,6 +38,11 @@
   cursor: pointer;
   justify-content: center;
   user-select: none;
+  align-self: center;
+}
+
+.toggleButton {
+  font-size: 1.25rem;
 }
 
 .toggleButton.medium {
@@ -48,30 +53,26 @@
   color: black;
   background: #fff;
   font-weight: bold;
-  border: 1px solid #c3c3c3;
-  box-shadow: 2px 2px 0px 0px rgb(0 0 0 / 10%);
+  /* border: 1px solid #c3c3c3;
+  box-shadow: 2px 2px 0px 0px rgb(0 0 0 / 10%); */
 }
 
 .toggleButton:hover {
   background: #d7d7d7;
-  border: 1px solid #c3c3c3;
-  box-shadow: none;
+  /* border: 1px solid #c3c3c3;
+  box-shadow: none; */
 }
 
 .toggleButton.active {
   background: #353535;
   color: #fff;
-  border: 1px solid #353535;
-  box-shadow: inset 2px 2px 0px 0px rgb(0 0 0 / 50%);
+  /* border: 1px solid #353535;
+  box-shadow: inset 2px 2px 0px 0px rgb(0 0 0 / 50%); */
 }
 
 .actionButton:hover {
   background: #d7d7d7;
   box-shadow: none;
-}
-
-.icon {
-  vertical-align: bottom;
 }
 
 .element {

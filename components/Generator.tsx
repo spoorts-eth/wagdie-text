@@ -28,6 +28,7 @@ import {
 import { toast } from 'react-toastify'
 
 import styles from '../styles/Generator.module.css'
+import Icon from './Icon'
 
 const initialValue: Descendant[] = [
   {
@@ -88,6 +89,17 @@ const CustomEditor = {
         Transforms.setSelection(editor, currentSelection)
       }
     }
+  },
+
+  getAllText(editor: ReactEditor): string {
+    return editor.children
+      .map((n) => {
+        if ('type' in n) {
+          return n.children.map((c) => c.text).join('')
+        }
+        return n.text
+      })
+      .join('\n')
   },
 }
 
@@ -172,20 +184,21 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
   )
 
   const copyContents = useCallback(async () => {
-    const text = editor.children
-      .map((n) => {
-        if ('type' in n) {
-          return n.children.map((c) => c.text).join('')
-        }
-        return n.text
-      })
-      .join('\n')
+    const text = CustomEditor.getAllText(editor);
     try {
       await navigator.clipboard.writeText(text)
       toast('Contents copied to clipboard', { toastId: 'copyContents' })
     } catch (error) {
       toast.error("Couldn't copy contents", { toastId: 'copyContents' })
     }
+  }, [editor])
+
+  const tweetContents = useCallback(async () => {
+    const text = CustomEditor.getAllText(editor)
+    const a = document.createElement('a')
+    a.href = `https://twitter.com/intent/tweet?hashtags=WAGDIE&text=${encodeURIComponent(text)}`;
+    a.setAttribute('target', '_blank')
+    a.click()
   }, [editor])
 
   const renderElement = useCallback((props: RenderElementProps) => {
@@ -213,7 +226,10 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
         />
         <div className={styles.bottombar}>
           <ActionButton onClick={copyContents}>
-            <Icon>copy_all</Icon>
+            <Icon>copy</Icon>
+          </ActionButton>
+          <ActionButton onClick={tweetContents}>
+            <Icon>twitter</Icon>
           </ActionButton>
         </div>
       </Slate>
@@ -287,16 +303,12 @@ const Topbar = ({
           isActive={CustomEditor.isBoldMarkActive(editor)}
           onMouseDown={toggleBold}
         >
-          <Icon>format_bold</Icon>
+          <Icon>bold</Icon>
         </ToggleButton>
       </div>
       <div>
-        <ToggleButton
-          isActive={fontEnabled}
-          onMouseDown={toggleFontEnabled}
-          size={ButtonSize.Medium}
-        >
-          {fontEnabled ? 'ON' : 'OFF'}
+        <ToggleButton isActive={fontEnabled} onMouseDown={toggleFontEnabled}>
+          <Icon>{fontEnabled ? 'toggle_on' : 'toggle_off'}</Icon>
         </ToggleButton>
       </div>
     </div>
@@ -327,10 +339,6 @@ const ToggleButton = ({
       {children}
     </span>
   )
-}
-
-const Icon = ({ children }: React.PropsWithChildren) => {
-  return <span className={cx('material-icons', styles.icon)}>{children}</span>
 }
 
 const Element = (props: RenderElementProps) => {

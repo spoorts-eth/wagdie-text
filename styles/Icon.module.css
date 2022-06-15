@@ -1,0 +1,4 @@
+.icon {
+  composes: icon from global;
+  font-size: 1.5rem;
+}
