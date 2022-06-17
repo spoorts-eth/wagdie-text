@@ -15,6 +15,7 @@ import {
   Descendant,
   Editor,
   Path,
+  Selection,
   Transforms,
 } from 'slate'
 import {
@@ -50,21 +51,51 @@ const CustomEditor = {
   },
 
   toggleFontEnabled(editor: ReactEditor, fontEnabled?: boolean) {
-    const currentSelection = { ...editor.selection }
-    // select all
-    Transforms.select(editor, {
-      anchor: Editor.start(editor, []),
-      focus: Editor.end(editor, []),
-    })
-    const newFragment = transformTextInFragment(editor.children, (text) => {
+    const { selection, children } = editor
+    const newFragment = transformTextInFragment(children, (text) => {
       return {
         ...text,
         text: this.generateText(text.text, text.bold, fontEnabled),
       }
     })
+    let newSelection: Selection = null
+    // replace selection accounting for change in unicode point length
+    if (selection) {
+      const { anchor, focus } = selection
+      const { path: anchorPath, offset: anchorOffset } = anchor
+      const { path: focusPath, offset: focusOffset } = focus
+      const anchorNode = Editor.leaf(editor, anchor)[0]
+      const focusNode = Editor.leaf(editor, anchor)[0]
+      newSelection = {
+        anchor: {
+          path: anchorPath,
+          offset: convertStringOffset(
+            anchorNode.text,
+            this.generateText(anchorNode.text, anchorNode.bold, fontEnabled),
+            anchorOffset
+          ),
+        },
+        focus: {
+          path: focusPath,
+          offset: convertStringOffset(
+            focusNode.text,
+            this.generateText(focusNode.text, focusNode.bold, fontEnabled),
+            focusOffset
+          ),
+        },
+      }
+    }
+    // delete all
+    Transforms.delete(editor, {
+      at: {
+        anchor: Editor.start(editor, []),
+        focus: Editor.end(editor, []),
+      },
+    })
+    // replace contents
     Transforms.insertFragment(editor, newFragment)
-    // todo how to make this work (we probably need to count the grapheme clusters)
-    // Transforms.setSelection(editor, currentSelection)
+    // todo fix this
+    // if (newSelection) Transforms.setSelection(editor, newSelection)
   },
 
   toggleBoldMark(editor: ReactEditor) {
@@ -116,14 +147,26 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
             const isAnchorNode = isPathEqual(anchorPath, path)
             const isFocusNode = isPathEqual(focusPath, path)
             Transforms.select(editor, {
-              anchor: isAnchorNode ? {
-                path: anchorPath,
-                offset: convertStringOffset(text, normalizedText, anchorOffset),
-              } : anchor,
-              focus: isFocusNode ? {
-                path: focusPath,
-                offset: convertStringOffset(text, normalizedText, focusOffset),
-              } : focus,
+              anchor: isAnchorNode
+                ? {
+                    path: anchorPath,
+                    offset: convertStringOffset(
+                      text,
+                      normalizedText,
+                      anchorOffset
+                    ),
+                  }
+                : anchor,
+              focus: isFocusNode
+                ? {
+                    path: focusPath,
+                    offset: convertStringOffset(
+                      text,
+                      normalizedText,
+                      focusOffset
+                    ),
+                  }
+                : focus,
             })
           }
           return
@@ -137,7 +180,7 @@ export default function Generator({ onChange }: { onChange?: () => void }) {
 
   // when the fontEnabled state changes, we need to update the text in the editor
   useEffect(() => {
-    CustomEditor.toggleFontEnabled(editor, !fontEnabled)
+    CustomEditor.toggleFontEnabled(editor, fontEnabled)
   }, [editor, fontEnabled])
 
   const generateText = useCallback((text: string, bold = false) => {
