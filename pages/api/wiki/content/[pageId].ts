@@ -25,9 +25,9 @@ export default async function handler(
       {
         authorization: `Bearer ${process.env.WIKI_API_KEY}`,
       }
-    );
-    response.end(result.pages.single.render);
-  } catch(err) {
-    response.status(404).end("This page does not exist");
+    )
+    response.end(result.pages.single.render)
+  } catch (err) {
+    response.status(404).end('This page does not exist')
   }
 }
