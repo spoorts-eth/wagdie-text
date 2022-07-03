@@ -26,7 +26,18 @@ export default async function handler(
         authorization: `Bearer ${process.env.WIKI_API_KEY}`,
       }
     )
-    response.end(result.pages.single.render)
+    response.end(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <base href="https://wagdie.wiki/" />
+        </head>
+        <body>
+        ${result.pages.single.render}
+        </body>
+      </html>
+    `)
   } catch (err) {
     response.status(404).end('This page does not exist')
   }
