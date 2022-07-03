@@ -17,13 +17,17 @@ export default async function handler(
   response: NextApiResponse
 ) {
   const { pageId } = request.query
-  const result = await graphqlRequest(
-    'https://wagdie.wiki/graphql',
-    query,
-    { id: Number(pageId) },
-    {
-      authorization: `Bearer ${process.env.WIKI_API_KEY}`,
-    }
-  );
-  response.end(result.pages.single.render);
+  try {
+    const result = await graphqlRequest(
+      'https://wagdie.wiki/graphql',
+      query,
+      { id: Number(pageId) },
+      {
+        authorization: `Bearer ${process.env.WIKI_API_KEY}`,
+      }
+    );
+    response.end(result.pages.single.render);
+  } catch(err) {
+    response.status(404).end("This page does not exist");
+  }
 }
